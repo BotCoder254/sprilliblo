@@ -22,12 +22,17 @@ public class TagController {
             @RequestParam(defaultValue = "20") int limit,
             HttpServletRequest request) {
 
+        System.out.println("Getting tags for tenant: " + tenantId + ", query: " + query + ", limit: " + limit);
+        
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
+            System.out.println("No userId found in request attributes");
             return ResponseEntity.status(401).build();
         }
 
+        System.out.println("User ID: " + userId);
         List<String> tags = postService.getPopularTags(tenantId, query, limit);
+        System.out.println("Found " + tags.size() + " tags: " + tags);
         return ResponseEntity.ok(tags);
     }
 }
