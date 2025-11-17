@@ -157,6 +157,21 @@ public class NotificationService {
     public void deleteAllNotifications(String tenantId, String userId) {
         notificationRepository.deleteByTenantIdAndUserId(tenantId, userId);
     }
+    
+    public void sendViewUpdate(String tenantId, String postId, Integer views) {
+        // Send real-time view update via WebSocket
+        Map<String, Object> viewUpdate = Map.of(
+                "type", "VIEW_UPDATE",
+                "postId", postId,
+                "views", views,
+                "timestamp", LocalDateTime.now()
+        );
+        
+        messagingTemplate.convertAndSend(
+                "/topic/posts/" + tenantId,
+                viewUpdate
+        );
+    }
 
     private NotificationResponse mapToResponse(Notification notification) {
         return new NotificationResponse(

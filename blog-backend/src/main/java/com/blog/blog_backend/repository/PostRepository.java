@@ -43,4 +43,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findByTenantIdAndStatusAndTagsInAndSlugNotOrderByPublishedAtDesc(String tenantId, Post.PostStatus status, List<String> tags, String slug, Pageable pageable);
 
     List<Post> findByTenantIdAndStatus(String tenantId, Post.PostStatus status);
+    
+    List<Post> findByTenantId(String tenantId);
 }

@@ -17,4 +17,6 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     List<Comment> findByTenantIdAndStatus(String tenantId, Comment.CommentStatus status);
 
     long countByTenantIdAndStatus(String tenantId, Comment.CommentStatus status);
+    
+    List<Comment> findByTenantId(String tenantId);
 }

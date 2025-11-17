@@ -188,8 +188,15 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         // Increment views
-        post.setViews(post.getViews() + 1);
-        postRepository.save(post);
+        post.setViews((post.getViews() != null ? post.getViews() : 0L) + 1L);
+        post = postRepository.save(post);
+        
+        // Send real-time view update via WebSocket
+        try {
+            notificationService.sendViewUpdate(tenantId, post.getId(), post.getViews().intValue());
+        } catch (Exception e) {
+            System.err.println("Failed to send view update: " + e.getMessage());
+        }
 
         User author = userRepository.findById(post.getAuthorId()).orElse(null);
         return mapToResponse(post, author);
@@ -326,6 +333,15 @@ public class PostService {
         return tag.toLowerCase().trim().replaceAll("\\s+", "-");
     }
 
+    public List<Post> findByTenantId(String tenantId) {
+        return postRepository.findByTenantId(tenantId);
+    }
+
+    public List<Post> findRecentPublished(String tenantId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "publishedAt"));
+        return postRepository.findByTenantIdAndStatusOrderByPublishedAtDesc(tenantId, Post.PostStatus.PUBLISHED, pageable).getContent();
+    }
+
     private PostResponse mapToResponse(Post post, User author) {
         PostResponse.AuthorDto authorDto = null;
         if (author != null) {
@@ -351,7 +367,7 @@ public class PostService {
                 post.getPublishedAt(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
-                post.getViews(),
+                post.getViews() != null ? post.getViews() : 0L,
                 authorDto,
                 1,
                 0L

@@ -42,6 +42,27 @@ public class Tenant {
         private boolean allowComments = true;
         private boolean isPublic = true;
         private String customDomain;
+        private SeoSettings seo = new SeoSettings();
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SeoSettings {
+        private String metaTitle;
+        private String metaDescription;
+        private String metaKeywords;
+        private String ogTitle;
+        private String ogDescription;
+        private String ogImage;
+        private String twitterTitle;
+        private String twitterDescription;
+        private String twitterImage;
+        private String twitterCard = "summary_large_image";
+        private boolean indexable = true;
+        private boolean followLinks = true;
+        private String canonicalUrl;
+        private String structuredData;
     }
 
     @Data

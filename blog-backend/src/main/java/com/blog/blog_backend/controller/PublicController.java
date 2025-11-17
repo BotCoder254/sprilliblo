@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/public/tenants/{tenantSlug}")
+@RequestMapping("/api/public/tenants")
 public class PublicController {
 
     @Autowired
@@ -33,7 +33,19 @@ public class PublicController {
     private CommentService commentService;
 
 
-    @GetMapping("/posts")
+    @GetMapping("/{tenantSlug}")
+    public ResponseEntity<Tenant> getTenant(@PathVariable String tenantSlug) {
+        Optional<Tenant> tenant = tenantService.findBySlug(tenantSlug);
+        if (tenant.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(30)))
+                .body(tenant.get());
+    }
+
+    @GetMapping("/{tenantSlug}/posts")
     public ResponseEntity<Page<PostResponse>> getPublicPosts(
             @PathVariable String tenantSlug,
             @RequestParam(defaultValue = "0") int page,
@@ -60,7 +72,7 @@ public class PublicController {
                 .body(postDTOs);
     }
 
-    @GetMapping("/posts/{slug}")
+    @GetMapping("/{tenantSlug}/posts/{slug}")
     public ResponseEntity<PostResponse> getPublicPost(
             @PathVariable String tenantSlug,
             @PathVariable String slug) {
@@ -82,7 +94,7 @@ public class PublicController {
                 .body(postDTO);
     }
 
-    @GetMapping("/posts/{slug}/related")
+    @GetMapping("/{tenantSlug}/posts/{slug}/related")
     public ResponseEntity<List<PostResponse>> getRelatedPosts(
             @PathVariable String tenantSlug,
             @PathVariable String slug) {
@@ -101,7 +113,7 @@ public class PublicController {
     }
 
 
-    @GetMapping("/tags")
+    @GetMapping("/{tenantSlug}/tags")
     public ResponseEntity<List<String>> getTags(
             @PathVariable String tenantSlug,
             @RequestParam(required = false) String query) {

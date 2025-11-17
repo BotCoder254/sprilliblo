@@ -130,4 +130,75 @@ public class TenantService {
     public java.util.Optional<Tenant> findBySlug(String slug) {
         return tenantRepository.findBySlug(slug);
     }
+
+    public Tenant.SeoSettings getSeoSettings(String tenantId, String userId) {
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        
+        if (!canUserAccessTenant(userId, tenant)) {
+            throw new RuntimeException("Access denied");
+        }
+        
+        // Ensure SEO settings exist
+        if (tenant.getSettings() == null) {
+            tenant.setSettings(new Tenant.BlogSettings());
+        }
+        if (tenant.getSettings().getSeo() == null) {
+            tenant.getSettings().setSeo(new Tenant.SeoSettings());
+        }
+        
+        return tenant.getSettings().getSeo();
+    }
+
+    public Tenant.SeoSettings updateSeoSettings(String tenantId, String userId, Tenant.SeoSettings seoSettings) {
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        
+        if (!canUserAccessTenant(userId, tenant)) {
+            throw new RuntimeException("Access denied");
+        }
+        
+        tenant.getSettings().setSeo(seoSettings);
+        tenant.setUpdatedAt(java.time.LocalDateTime.now());
+        tenantRepository.save(tenant);
+        
+        return seoSettings;
+    }
+
+    public Map<String, Object> generateSeoPreview(String tenantId, Tenant.SeoSettings seoSettings) {
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        
+        Map<String, Object> preview = new java.util.HashMap<>();
+        
+        // Google Search Preview
+        Map<String, String> googlePreview = new java.util.HashMap<>();
+        googlePreview.put("title", seoSettings.getMetaTitle() != null ? seoSettings.getMetaTitle() : tenant.getName());
+        googlePreview.put("description", seoSettings.getMetaDescription() != null ? seoSettings.getMetaDescription() : tenant.getDescription());
+        googlePreview.put("url", "https://" + tenant.getSlug() + ".sprilliblo.com");
+        preview.put("google", googlePreview);
+        
+        // Facebook Preview
+        Map<String, String> facebookPreview = new java.util.HashMap<>();
+        facebookPreview.put("title", seoSettings.getOgTitle() != null ? seoSettings.getOgTitle() : seoSettings.getMetaTitle());
+        facebookPreview.put("description", seoSettings.getOgDescription() != null ? seoSettings.getOgDescription() : seoSettings.getMetaDescription());
+        facebookPreview.put("image", seoSettings.getOgImage());
+        facebookPreview.put("url", "https://" + tenant.getSlug() + ".sprilliblo.com");
+        preview.put("facebook", facebookPreview);
+        
+        // Twitter Preview
+        Map<String, String> twitterPreview = new java.util.HashMap<>();
+        twitterPreview.put("title", seoSettings.getTwitterTitle() != null ? seoSettings.getTwitterTitle() : seoSettings.getOgTitle());
+        twitterPreview.put("description", seoSettings.getTwitterDescription() != null ? seoSettings.getTwitterDescription() : seoSettings.getOgDescription());
+        twitterPreview.put("image", seoSettings.getTwitterImage() != null ? seoSettings.getTwitterImage() : seoSettings.getOgImage());
+        twitterPreview.put("card", seoSettings.getTwitterCard());
+        preview.put("twitter", twitterPreview);
+        
+        return preview;
+    }
+
+    private boolean canUserAccessTenant(String userId, Tenant tenant) {
+        return tenant.getMembers().stream()
+                .anyMatch(member -> member.getUserId().equals(userId));
+    }
 }

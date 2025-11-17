@@ -4,6 +4,7 @@ import com.blog.blog_backend.dto.CommentRequest;
 import com.blog.blog_backend.dto.CommentResponse;
 import com.blog.blog_backend.model.Comment;
 import com.blog.blog_backend.service.CommentService;
+import com.blog.blog_backend.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,11 @@ import java.util.Map;
 public class CommentController {
 
     private final CommentService commentService;
+    private final NotificationService notificationService;
 
-    public CommentController(CommentService commentService) {
+    public CommentController(CommentService commentService, NotificationService notificationService) {
         this.commentService = commentService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/posts/{postId}/comments")

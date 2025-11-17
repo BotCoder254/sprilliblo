@@ -156,6 +156,10 @@ public class CommentService {
                 .replaceAll("\\s+", " "); // Normalize whitespace
     }
 
+    public List<Comment> findByTenantId(String tenantId) {
+        return commentRepository.findByTenantId(tenantId);
+    }
+
     private CommentResponse mapToResponse(Comment comment) {
         return new CommentResponse(
                 comment.getId(),
