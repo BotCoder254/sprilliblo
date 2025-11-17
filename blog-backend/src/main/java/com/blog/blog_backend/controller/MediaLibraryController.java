@@ -16,24 +16,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/tenants/{tenantId}/media")
 public class MediaLibraryController {
-    
+
     private final MediaService mediaService;
-    
+
     public MediaLibraryController(MediaService mediaService) {
         this.mediaService = mediaService;
     }
-    
+
     @PostMapping("/upload")
     public ResponseEntity<Media> uploadMedia(
             @PathVariable String tenantId,
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request) {
-        
+
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         try {
             Media media = mediaService.uploadFile(tenantId, userId, file);
             return ResponseEntity.ok(media);
@@ -43,7 +43,7 @@ public class MediaLibraryController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @GetMapping
     public ResponseEntity<Page<Media>> getMedia(
             @PathVariable String tenantId,
@@ -51,29 +51,29 @@ public class MediaLibraryController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String type,
             HttpServletRequest request) {
-        
+
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<Media> media = mediaService.getMedia(tenantId, type, pageable);
-        
+
         return ResponseEntity.ok(media);
     }
-    
+
     @GetMapping("/{mediaId}")
     public ResponseEntity<Media> getMediaById(
             @PathVariable String tenantId,
             @PathVariable String mediaId,
             HttpServletRequest request) {
-        
+
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         try {
             Media media = mediaService.getMediaById(tenantId, mediaId);
             return ResponseEntity.ok(media);
@@ -81,19 +81,19 @@ public class MediaLibraryController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PutMapping("/{mediaId}")
     public ResponseEntity<Media> updateMedia(
             @PathVariable String tenantId,
             @PathVariable String mediaId,
             @RequestBody Map<String, String> request,
             HttpServletRequest httpRequest) {
-        
+
         String userId = (String) httpRequest.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         try {
             String newFilename = request.get("filename");
             Media media = mediaService.updateMedia(tenantId, mediaId, userId, newFilename);
@@ -102,18 +102,18 @@ public class MediaLibraryController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @DeleteMapping("/{mediaId}")
     public ResponseEntity<Void> deleteMedia(
             @PathVariable String tenantId,
             @PathVariable String mediaId,
             HttpServletRequest request) {
-        
+
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         try {
             mediaService.deleteMedia(tenantId, mediaId, userId);
             return ResponseEntity.ok().build();

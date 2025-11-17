@@ -55,7 +55,7 @@ public class SearchService {
 
     private List<SearchResultDto.PostSearchResult> searchPosts(Pattern pattern, String tenantId, int limit) {
         Query query = new Query();
-        
+
         // Use text search if available, otherwise fall back to regex
         try {
             query.addCriteria(Criteria.where("tenantId").is(tenantId)
@@ -71,7 +71,7 @@ public class SearchService {
                             Criteria.where("tags").regex(pattern)
                     ));
         }
-        
+
         query.limit(limit);
 
         List<Post> posts = mongoTemplate.find(query, Post.class);

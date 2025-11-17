@@ -16,13 +16,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/tenants/{tenantId}/posts")
 public class PostController {
-    
+
     private final PostService postService;
-    
+
     public PostController(PostService postService) {
         this.postService = postService;
     }
-    
+
     @PostMapping
     public ResponseEntity<PostResponse> createPost(
             @PathVariable String tenantId,
@@ -33,14 +33,14 @@ public class PostController {
             if (userId == null) {
                 return ResponseEntity.status(401).build();
             }
-            
+
             PostResponse response = postService.createPost(tenantId, userId, request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getPosts(
             @PathVariable String tenantId,
@@ -57,7 +57,7 @@ public class PostController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPost(
             @PathVariable String tenantId,
@@ -69,7 +69,7 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @GetMapping("/slug/{slug}")
     public ResponseEntity<PostResponse> getPostBySlug(
             @PathVariable String tenantId,
@@ -81,7 +81,7 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PutMapping("/{postId}")
     public ResponseEntity<PostResponse> updatePost(
             @PathVariable String tenantId,
@@ -93,14 +93,14 @@ public class PostController {
             if (userId == null) {
                 return ResponseEntity.status(401).build();
             }
-            
+
             PostResponse response = postService.updatePost(tenantId, postId, userId, request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(
             @PathVariable String tenantId,
@@ -111,14 +111,14 @@ public class PostController {
             if (userId == null) {
                 return ResponseEntity.status(401).build();
             }
-            
+
             postService.deletePost(tenantId, postId, userId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @GetMapping("/check-slug/{slug}")
     public ResponseEntity<Map<String, Object>> checkSlugAvailability(
             @PathVariable String tenantId,
@@ -127,8 +127,8 @@ public class PostController {
             List<String> suggestions = postService.generateSlugSuggestions(tenantId, slug);
             boolean available = suggestions.isEmpty();
             Map<String, Object> response = Map.of(
-                "available", available,
-                "suggestions", suggestions
+                    "available", available,
+                    "suggestions", suggestions
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {

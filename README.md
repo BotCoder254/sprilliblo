@@ -13,6 +13,7 @@ A modern, responsive multi-tenant blog platform built with React and Spring Boot
 - **Secure Backend**: Spring Boot with Spring Security and MongoDB
 - **Advanced Search**: Full-text search with typeahead, keyboard shortcuts (⌘K), and grouped results
 - **Content Management**: Rich text editor, media library, tags, categories, and comment moderation
+- **Real-time Notifications**: WebSocket-powered notifications with browser notifications and mobile support
 
 ## Tech Stack
 
@@ -125,6 +126,16 @@ sprilliblo/
 ### Tags & Categories
 - `GET /api/tenants/{tenantId}/tags/typeahead?q=query` - Tag suggestions
 - `GET /api/tenants/{tenantId}/categories` - Get categories
+
+### Notifications
+- `GET /api/tenants/{tenantId}/notifications` - Get notifications with pagination
+- `GET /api/tenants/{tenantId}/notifications/recent` - Get recent notifications
+- `GET /api/tenants/{tenantId}/notifications/unread` - Get unread notifications
+- `GET /api/tenants/{tenantId}/notifications/unread/count` - Get unread count
+- `PUT /api/tenants/{tenantId}/notifications/{id}/read` - Mark notification as read
+- `PUT /api/tenants/{tenantId}/notifications/read-all` - Mark all notifications as read
+- `DELETE /api/tenants/{tenantId}/notifications/{id}` - Delete notification
+- `DELETE /api/tenants/{tenantId}/notifications/all` - Delete all notifications
 
 ## Data Models
 

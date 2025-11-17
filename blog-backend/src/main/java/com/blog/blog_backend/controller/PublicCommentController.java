@@ -72,7 +72,7 @@ public class PublicCommentController {
 
         String userId = (String) httpRequest.getAttribute("userId");
         CommentResponse comment = commentService.createComment(tenant.get().getId(), post.get().getId(), request, userId);
-        
+
         return ResponseEntity.ok(comment);
     }
 }

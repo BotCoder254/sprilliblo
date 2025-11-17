@@ -8,8 +8,8 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 @EnableMongoAuditing
 public class BlogBackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BlogBackendApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(BlogBackendApplication.class, args);
+    }
 
 }

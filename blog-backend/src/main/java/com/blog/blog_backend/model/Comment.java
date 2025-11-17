@@ -16,24 +16,24 @@ import java.time.LocalDateTime;
 public class Comment {
     @Id
     private String id;
-    
+
     @Indexed
     private String tenantId;
-    
+
     @Indexed
     private String postId;
-    
+
     private String authorName;
     private String authorEmail;
     private String authorId; // For logged-in users
     private String body;
-    
+
     @Indexed
     private CommentStatus status = CommentStatus.PENDING;
-    
+
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
-    
+
     public enum CommentStatus {
         PENDING, APPROVED, REJECTED
     }

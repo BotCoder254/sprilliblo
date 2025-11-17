@@ -20,20 +20,20 @@ import java.util.ArrayList;
 public class Post {
     @Id
     private String id;
-    
+
     @Indexed
     private String tenantId;
-    
+
     @Indexed
     private String authorId;
-    
+
     private String title;
     private String slug;
     private String excerpt;
-    
+
     @org.springframework.data.mongodb.core.mapping.Field
     private String bodyHtml;
-    
+
     private String bodyMarkdown;
     private String content; // For public API
     private String author; // Author name for public API
@@ -41,15 +41,15 @@ public class Post {
     private List<String> tags = new ArrayList<>();
     private List<String> categories = new ArrayList<>();
     private String coverImageUrl;
-    
+
     @Indexed
     private PostStatus status = PostStatus.DRAFT;
-    
+
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
     private Long views = 0L;
-    
+
     public enum PostStatus {
         DRAFT, PUBLISHED
     }

@@ -19,7 +19,7 @@ public class SearchController {
             @RequestParam String q,
             @RequestParam(defaultValue = "5") int limit,
             Authentication authentication) {
-        
+
         String tenantId = (String) authentication.getPrincipal();
         SearchResultDto results = searchService.search(q, tenantId, limit);
         return ResponseEntity.ok(results);

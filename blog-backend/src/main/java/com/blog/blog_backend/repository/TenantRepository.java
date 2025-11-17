@@ -10,6 +10,8 @@ import java.util.Optional;
 @Repository
 public interface TenantRepository extends MongoRepository<Tenant, String> {
     Optional<Tenant> findBySlug(String slug);
+
     boolean existsBySlug(String slug);
+
     List<Tenant> findByMembersUserId(String userId);
 }

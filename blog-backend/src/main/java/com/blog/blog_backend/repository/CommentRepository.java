@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends MongoRepository<Comment, String> {
     List<Comment> findByTenantIdAndPostIdAndStatusOrderByCreatedAtAsc(String tenantId, String postId, Comment.CommentStatus status);
+
     Page<Comment> findByTenantIdAndStatusOrderByCreatedAtDesc(String tenantId, Comment.CommentStatus status, Pageable pageable);
+
     long countByTenantIdAndStatus(String tenantId, Comment.CommentStatus status);
 }

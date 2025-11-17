@@ -25,7 +25,7 @@ public class PostResponse {
     private LocalDateTime updatedAt;
     private Long views;
     private AuthorDto author;
-    
+
     @Data
     @AllArgsConstructor
     public static class AuthorDto {

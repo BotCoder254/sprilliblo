@@ -61,13 +61,13 @@ public class RSSController {
             xml.append("      <guid>").append("https://").append(tenant.getSlug()).append(".sprilliblo.com/posts/").append(post.getSlug()).append("</guid>\n");
             xml.append("      <pubDate>").append(post.getPublishedAt().format(DateTimeFormatter.RFC_1123_DATE_TIME)).append("</pubDate>\n");
             xml.append("      <author>").append(escapeXml(post.getAuthor())).append("</author>\n");
-            
+
             if (post.getTags() != null && !post.getTags().isEmpty()) {
                 for (String tag : post.getTags()) {
                     xml.append("      <category>").append(escapeXml(tag)).append("</category>\n");
                 }
             }
-            
+
             xml.append("    </item>\n");
         }
 
@@ -80,9 +80,9 @@ public class RSSController {
     private String escapeXml(String text) {
         if (text == null) return "";
         return text.replace("&", "&amp;")
-                  .replace("<", "&lt;")
-                  .replace(">", "&gt;")
-                  .replace("\"", "&quot;")
-                  .replace("'", "&#39;");
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

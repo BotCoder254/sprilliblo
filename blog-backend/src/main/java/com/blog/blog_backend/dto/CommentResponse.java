@@ -1,6 +1,7 @@
 package com.blog.blog_backend.dto;
 
 import com.blog.blog_backend.model.Comment;
+
 import java.time.LocalDateTime;
 
 public class CommentResponse {
@@ -18,9 +19,23 @@ public class CommentResponse {
         this.createdAt = createdAt;
     }
 
-    public String getId() { return id; }
-    public String getAuthorName() { return authorName; }
-    public String getBody() { return body; }
-    public Comment.CommentStatus getStatus() { return status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getId() {
+        return id;
+    }
+
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public Comment.CommentStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

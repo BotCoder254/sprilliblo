@@ -12,8 +12,12 @@ import java.util.Optional;
 @Repository
 public interface MediaRepository extends MongoRepository<Media, String> {
     Page<Media> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
+
     Page<Media> findByTenantIdAndMimeTypeStartingWithOrderByCreatedAtDesc(String tenantId, String mimeTypePrefix, Pageable pageable);
+
     List<Media> findByTenantIdAndUploadedByOrderByCreatedAtDesc(String tenantId, String uploadedBy);
+
     Optional<Media> findByTenantIdAndId(String tenantId, String id);
+
     long countByTenantId(String tenantId);
 }

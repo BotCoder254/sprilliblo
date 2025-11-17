@@ -18,24 +18,24 @@ import java.util.ArrayList;
 public class User {
     @Id
     private String id;
-    
+
     @Indexed(unique = true)
     private String email;
-    
+
     private String password;
     private String firstName;
     private String lastName;
     private boolean emailVerified = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
-    
+
     // Reset token for password reset
     private ResetToken resetToken;
-    
+
     // Multi-tenant support
     private List<String> tenantIds = new ArrayList<>();
     private String currentTenantId;
-    
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

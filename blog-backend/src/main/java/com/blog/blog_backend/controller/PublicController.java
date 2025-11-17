@@ -27,7 +27,6 @@ public class PublicController {
 
     @Autowired
     private TenantService tenantService;
-    
 
 
     @GetMapping("/posts")
@@ -46,7 +45,7 @@ public class PublicController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
         Page<Post> posts = postService.findPublishedPosts(tenant.get().getId(), tag, author, q, pageable);
-        
+
         Page<PostResponse> postDTOs = posts.map(this::convertToPublicDTO);
 
         return ResponseEntity.ok()
@@ -93,9 +92,8 @@ public class PublicController {
                 .cacheControl(CacheControl.maxAge(Duration.ofMinutes(15)))
                 .body(postDTOs);
     }
-    
 
-    
+
     @GetMapping("/tags")
     public ResponseEntity<List<String>> getTags(
             @PathVariable String tenantSlug,
@@ -115,32 +113,32 @@ public class PublicController {
 
     private PostResponse convertToPublicDTO(Post post) {
         return new PostResponse(
-            post.getId(),
-            post.getTitle(),
-            post.getSlug(),
-            post.getExcerpt(),
-            post.getContent(),
-            post.getBodyMarkdown(),
-            post.getTags(),
-            post.getCategories(),
-            post.getFeaturedImage(),
-            post.getStatus(),
-            post.getPublishedAt(),
-            post.getCreatedAt(),
-            post.getUpdatedAt(),
-            post.getViews(),
-            new PostResponse.AuthorDto(post.getAuthorId(), post.getAuthor(), "", "")
+                post.getId(),
+                post.getTitle(),
+                post.getSlug(),
+                post.getExcerpt(),
+                post.getContent(),
+                post.getBodyMarkdown(),
+                post.getTags(),
+                post.getCategories(),
+                post.getFeaturedImage(),
+                post.getStatus(),
+                post.getPublishedAt(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getViews(),
+                new PostResponse.AuthorDto(post.getAuthorId(), post.getAuthor(), "", "")
         );
     }
 
     private int calculateReadTime(String content) {
         if (content == null || content.isEmpty()) return 1;
-        
+
         // Remove HTML tags and count words
         String plainText = content.replaceAll("<[^>]*>", "");
         String[] words = plainText.trim().split("\\s+");
         int wordCount = words.length;
-        
+
         // Average reading speed: 200 words per minute
         int readTime = Math.max(1, (int) Math.ceil(wordCount / 200.0));
         return readTime;

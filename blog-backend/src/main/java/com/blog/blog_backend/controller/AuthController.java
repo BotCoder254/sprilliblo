@@ -12,13 +12,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    
+
     private final AuthService authService;
-    
+
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         try {
@@ -28,7 +28,7 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         try {
@@ -38,7 +38,7 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @PostMapping("/forgot")
     public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
         try {
@@ -48,7 +48,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     @PostMapping("/reset")
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
         try {
@@ -58,7 +58,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     @GetMapping("/me")
     public ResponseEntity<AuthResponse.UserDto> getCurrentUser(HttpServletRequest request) {
         try {
@@ -66,14 +66,14 @@ public class AuthController {
             if (userId == null) {
                 return ResponseEntity.status(401).build();
             }
-            
+
             AuthResponse.UserDto user = authService.getCurrentUser(userId);
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
         // For JWT, logout is handled client-side by removing the token

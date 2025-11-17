@@ -12,7 +12,7 @@ import java.util.List;
 public class AuthResponse {
     private String token;
     private UserDto user;
-    
+
     @Data
     @AllArgsConstructor
     public static class UserDto {
@@ -24,7 +24,7 @@ public class AuthResponse {
         private List<TenantDto> tenants;
         private TenantDto currentTenant;
     }
-    
+
     @Data
     @AllArgsConstructor
     public static class TenantDto {

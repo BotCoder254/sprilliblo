@@ -21,7 +21,7 @@ public class MongoConfig {
                 .onField("excerpt", 2f)
                 .onField("tags", 1f)
                 .build();
-        
+
         mongoTemplate.indexOps("posts").ensureIndex(textIndex);
     }
 }

@@ -13,15 +13,15 @@ public class PostRequest {
     @NotBlank(message = "Title is required")
     @Size(max = 200, message = "Title must be less than 200 characters")
     private String title;
-    
+
     private String slug;
-    
+
     @Size(max = 500, message = "Excerpt must be less than 500 characters")
     private String excerpt;
-    
+
     @Size(max = 5242880, message = "Content must be less than 5MB")
     private String bodyHtml;
-    
+
     private String bodyMarkdown;
     private List<String> tags = new ArrayList<>();
     private List<String> categories = new ArrayList<>();

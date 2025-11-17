@@ -18,22 +18,22 @@ import java.util.ArrayList;
 public class Tenant {
     @Id
     private String id;
-    
+
     @Indexed(unique = true)
     private String slug;
-    
+
     private String name;
     private String description;
     private String ownerId;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
-    
+
     // Blog settings
     private BlogSettings settings = new BlogSettings();
-    
+
     // Members with roles
     private List<TenantMember> members = new ArrayList<>();
-    
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -43,7 +43,7 @@ public class Tenant {
         private boolean isPublic = true;
         private String customDomain;
     }
-    
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

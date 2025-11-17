@@ -11,13 +11,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/tenants")
 public class TenantController {
-    
+
     private final TenantService tenantService;
-    
+
     public TenantController(TenantService tenantService) {
         this.tenantService = tenantService;
     }
-    
+
     @GetMapping("/check-slug/{slug}")
     public ResponseEntity<Map<String, Object>> checkSlugAvailability(@PathVariable String slug) {
         try {
@@ -32,16 +32,16 @@ public class TenantController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     @PostMapping
-    public ResponseEntity<AuthResponse> createTenant(@RequestBody Map<String, String> request, 
-                                                   HttpServletRequest httpRequest) {
+    public ResponseEntity<AuthResponse> createTenant(@RequestBody Map<String, String> request,
+                                                     HttpServletRequest httpRequest) {
         try {
             String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.status(401).build();
             }
-            
+
             AuthResponse response = tenantService.createTenantForUser(userId, request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
