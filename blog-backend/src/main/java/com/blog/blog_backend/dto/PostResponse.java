@@ -25,6 +25,7 @@ public class PostResponse {
     private LocalDateTime updatedAt;
     private Long views;
     private AuthorDto author;
+    private Integer readTime;
 
     @Data
     @AllArgsConstructor

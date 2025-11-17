@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -36,14 +37,17 @@ public class PublicController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String tag,
             @RequestParam(required = false) String author,
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "publishedAt") String sort) {
 
         Optional<Tenant> tenant = tenantService.findBySlug(tenantSlug);
         if (tenant.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+        Sort.Direction direction = Sort.Direction.DESC;
+        String sortField = sort.equals("views") ? "views" : "publishedAt";
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
         Page<Post> posts = postService.findPublishedPosts(tenant.get().getId(), tag, author, q, pageable);
 
         Page<PostResponse> postDTOs = posts.map(this::convertToPublicDTO);
@@ -111,24 +115,44 @@ public class PublicController {
                 .body(tags);
     }
 
+    @GetMapping("/posts/{slug}/comments")
+    public ResponseEntity<List<Object>> getComments(
+            @PathVariable String tenantSlug,
+            @PathVariable String slug) {
+        // Return empty list for now - comments feature not implemented yet
+        return ResponseEntity.ok(List.of());
+    }
+
+    @PostMapping("/posts/{slug}/comments")
+    public ResponseEntity<Object> createComment(
+            @PathVariable String tenantSlug,
+            @PathVariable String slug,
+            @RequestBody Object commentData) {
+        // Return success response for now - comments feature not implemented yet
+        return ResponseEntity.ok(Map.of("message", "Comment feature coming soon"));
+    }
+
     private PostResponse convertToPublicDTO(Post post) {
-        return new PostResponse(
+        PostResponse response = new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getSlug(),
                 post.getExcerpt(),
-                post.getContent(),
+                post.getContent() != null ? post.getContent() : post.getBodyHtml(),
                 post.getBodyMarkdown(),
                 post.getTags(),
                 post.getCategories(),
-                post.getFeaturedImage(),
+                post.getFeaturedImage() != null ? post.getFeaturedImage() : post.getCoverImageUrl(),
                 post.getStatus(),
                 post.getPublishedAt(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getViews(),
-                new PostResponse.AuthorDto(post.getAuthorId(), post.getAuthor(), "", "")
+                new PostResponse.AuthorDto(post.getAuthorId(), post.getAuthor() != null ? post.getAuthor() : "Anonymous", "", ""),
+                calculateReadTime(post.getContent() != null ? post.getContent() : post.getBodyHtml())
         );
+        
+        return response;
     }
 
     private int calculateReadTime(String content) {

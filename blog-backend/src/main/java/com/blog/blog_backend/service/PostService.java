@@ -352,7 +352,8 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getViews(),
-                authorDto
+                authorDto,
+                1
         );
     }
 }
