@@ -126,4 +126,8 @@ public class TenantService {
         AuthResponse.UserDto userDto = authService.getCurrentUser(userId);
         return new AuthResponse(token, userDto);
     }
+    
+    public java.util.Optional<Tenant> findBySlug(String slug) {
+        return tenantRepository.findBySlug(slug);
+    }
 }
