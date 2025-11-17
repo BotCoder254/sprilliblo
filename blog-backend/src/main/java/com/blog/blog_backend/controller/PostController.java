@@ -46,9 +46,12 @@ public class PostController {
             @PathVariable String tenantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Post.PostStatus status) {
+            @RequestParam(required = false) Post.PostStatus status,
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String author) {
         try {
-            Page<PostResponse> posts = postService.getPosts(tenantId, page, size, status);
+            Page<PostResponse> posts = postService.getPosts(tenantId, page, size, status, tag, category, author);
             return ResponseEntity.ok(posts);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

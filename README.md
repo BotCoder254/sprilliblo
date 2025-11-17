@@ -11,6 +11,8 @@ A modern, responsive multi-tenant blog platform built with React and Spring Boot
 - **Authentication**: Email/password authentication with JWT tokens
 - **Real-time Updates**: WebSocket support for live content updates
 - **Secure Backend**: Spring Boot with Spring Security and MongoDB
+- **Advanced Search**: Full-text search with typeahead, keyboard shortcuts (⌘K), and grouped results
+- **Content Management**: Rich text editor, media library, tags, categories, and comment moderation
 
 ## Tech Stack
 
@@ -110,6 +112,19 @@ sprilliblo/
 - `POST /api/auth/reset` - Reset password
 - `GET /api/auth/me` - Get current user
 - `POST /api/auth/logout` - User logout
+
+### Search
+- `GET /api/search?q=query&limit=5` - Search posts, tags, and authors
+
+### Posts
+- `GET /api/tenants/{tenantId}/posts` - Get posts with filtering (tag, category, author, status)
+- `POST /api/tenants/{tenantId}/posts` - Create post
+- `PUT /api/tenants/{tenantId}/posts/{postId}` - Update post
+- `DELETE /api/tenants/{tenantId}/posts/{postId}` - Delete post
+
+### Tags & Categories
+- `GET /api/tenants/{tenantId}/tags/typeahead?q=query` - Tag suggestions
+- `GET /api/tenants/{tenantId}/categories` - Get categories
 
 ## Data Models
 

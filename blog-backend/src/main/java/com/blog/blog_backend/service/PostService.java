@@ -6,9 +6,15 @@ import com.blog.blog_backend.model.Post;
 import com.blog.blog_backend.model.User;
 import com.blog.blog_backend.repository.PostRepository;
 import com.blog.blog_backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +27,9 @@ public class PostService {
     
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    
+    @Autowired
+    private MongoTemplate mongoTemplate;
     
     public PostService(PostRepository postRepository, UserRepository userRepository) {
         this.postRepository = postRepository;
@@ -95,20 +104,48 @@ public class PostService {
         return mapToResponse(post, author);
     }
     
-    public Page<PostResponse> getPosts(String tenantId, int page, int size, Post.PostStatus status) {
+    public Page<PostResponse> getPosts(String tenantId, int page, int size, Post.PostStatus status, String tag, String category, String author) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post> posts;
-        
-        if (status != null) {
-            posts = postRepository.findByTenantIdAndStatusOrderByUpdatedAtDesc(tenantId, status, pageable);
-        } else {
-            posts = postRepository.findByTenantIdOrderByUpdatedAtDesc(tenantId, pageable);
-        }
+        Page<Post> posts = getFilteredPosts(tenantId, status, tag, category, author, pageable);
         
         return posts.map(post -> {
-            User author = userRepository.findById(post.getAuthorId()).orElse(null);
-            return mapToResponse(post, author);
+            User postAuthor = userRepository.findById(post.getAuthorId()).orElse(null);
+            return mapToResponse(post, postAuthor);
         });
+    }
+    
+    public Page<PostResponse> getPosts(String tenantId, int page, int size, Post.PostStatus status) {
+        return getPosts(tenantId, page, size, status, null, null, null);
+    }
+    
+    private Page<Post> getFilteredPosts(String tenantId, Post.PostStatus status, String tag, String category, String author, Pageable pageable) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("tenantId").is(tenantId);
+        
+        if (status != null) {
+            criteria = criteria.and("status").is(status);
+        }
+        
+        if (tag != null && !tag.trim().isEmpty()) {
+            criteria = criteria.and("tags").in(tag.trim());
+        }
+        
+        if (category != null && !category.trim().isEmpty()) {
+            criteria = criteria.and("categories").in(category.trim());
+        }
+        
+        if (author != null && !author.trim().isEmpty()) {
+            criteria = criteria.and("author").regex(author.trim(), "i");
+        }
+        
+        query.addCriteria(criteria);
+        query.with(Sort.by(Sort.Direction.DESC, "updatedAt"));
+        query.with(pageable);
+        
+        List<Post> posts = mongoTemplate.find(query, Post.class);
+        long total = mongoTemplate.count(query.skip(0).limit(0), Post.class);
+        
+        return new PageImpl<>(posts, pageable, total);
     }
     
     public PostResponse getPost(String tenantId, String postId) {

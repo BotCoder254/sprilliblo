@@ -1,39 +1,27 @@
 package com.blog.blog_backend.config;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.ServerApi;
-import com.mongodb.ServerApiVersion;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.TextIndexDefinition;
+
+import jakarta.annotation.PostConstruct;
 
 @Configuration
-public class MongoConfig extends AbstractMongoClientConfiguration {
+public class MongoConfig {
 
-    @Value("${spring.data.mongodb.uri}")
-    private String connectionString;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
-    @Override
-    protected String getDatabaseName() {
-        return "sprilliblo";
-    }
-
-    @Bean
-    @Override
-    public MongoClient mongoClient() {
-        ServerApi serverApi = ServerApi.builder()
-                .version(ServerApiVersion.V1)
+    @PostConstruct
+    public void initIndexes() {
+        // Create text index for posts collection
+        TextIndexDefinition textIndex = new TextIndexDefinition.TextIndexDefinitionBuilder()
+                .onField("title", 3f)
+                .onField("excerpt", 2f)
+                .onField("tags", 1f)
                 .build();
-
-        MongoClientSettings settings = MongoClientSettings.builder()
-                .applyConnectionString(new ConnectionString(connectionString))
-                .serverApi(serverApi)
-                .build();
-
-        return MongoClients.create(settings);
+        
+        mongoTemplate.indexOps("posts").ensureIndex(textIndex);
     }
 }
