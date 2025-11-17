@@ -26,6 +26,7 @@ public class PostResponse {
     private Long views;
     private AuthorDto author;
     private Integer readTime;
+    private Long commentsCount;
 
     @Data
     @AllArgsConstructor

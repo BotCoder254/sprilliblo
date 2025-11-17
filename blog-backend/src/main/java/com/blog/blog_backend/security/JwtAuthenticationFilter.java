@@ -26,6 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+        System.out.println("JWT Filter processing: " + request.getMethod() + " " + requestURI);
+
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String email = null;
@@ -55,7 +58,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.setAttribute("tenantId", tenantId);
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authenticated user: " + email);
             }
+        } else if (requestURI.startsWith("/api/public/")) {
+            System.out.println("Public endpoint - no authentication required");
         }
 
         filterChain.doFilter(request, response);

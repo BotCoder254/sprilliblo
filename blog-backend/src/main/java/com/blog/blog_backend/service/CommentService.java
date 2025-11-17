@@ -30,8 +30,11 @@ public class CommentService {
     }
 
     public CommentResponse createComment(String tenantId, String postId, CommentRequest request, String userId) {
+        System.out.println("CommentService.createComment called with tenantId: " + tenantId + ", postId: " + postId + ", userId: " + userId);
+        
         // Spam protection
         if (request.getHoneypot() != null && !request.getHoneypot().isEmpty()) {
+            System.out.println("Spam detected in honeypot field");
             throw new RuntimeException("Spam detected");
         }
 
@@ -45,11 +48,15 @@ public class CommentService {
         if (userId != null) {
             comment.setAuthorId(userId);
             comment.setStatus(Comment.CommentStatus.APPROVED); // Auto-approve for logged-in users
+            System.out.println("Setting comment status to APPROVED for logged-in user");
         } else {
             comment.setStatus(Comment.CommentStatus.PENDING); // Moderate anonymous comments
+            System.out.println("Setting comment status to PENDING for anonymous user");
         }
 
+        System.out.println("Saving comment to database...");
         comment = commentRepository.save(comment);
+        System.out.println("Comment saved with ID: " + comment.getId());
 
         // Create notification for post author
         try {
@@ -72,14 +79,25 @@ public class CommentService {
     }
 
     public List<CommentResponse> getApprovedComments(String tenantId, String postId) {
+        System.out.println("Getting approved comments for tenantId: " + tenantId + ", postId: " + postId);
         List<Comment> comments = commentRepository.findByTenantIdAndPostIdAndStatusOrderByCreatedAtAsc(
                 tenantId, postId, Comment.CommentStatus.APPROVED);
+        System.out.println("Found " + comments.size() + " approved comments in database");
+        
+        // Also check for pending comments for debugging
+        List<Comment> pendingComments = commentRepository.findByTenantIdAndPostIdAndStatusOrderByCreatedAtAsc(
+                tenantId, postId, Comment.CommentStatus.PENDING);
+        System.out.println("Found " + pendingComments.size() + " pending comments in database");
+        
         return comments.stream().map(this::mapToResponse).toList();
     }
 
     public Page<Comment> getPendingComments(String tenantId, Pageable pageable) {
-        return commentRepository.findByTenantIdAndStatusOrderByCreatedAtDesc(
+        System.out.println("CommentService.getPendingComments called for tenantId: " + tenantId);
+        Page<Comment> result = commentRepository.findByTenantIdAndStatusOrderByCreatedAtDesc(
                 tenantId, Comment.CommentStatus.PENDING, pageable);
+        System.out.println("Found " + result.getTotalElements() + " pending comments in service");
+        return result;
     }
 
     public void approveComment(String tenantId, String commentId) {
@@ -117,6 +135,17 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
+    }
+
+    public int approveAllPendingComments(String tenantId) {
+        List<Comment> pendingComments = commentRepository.findByTenantIdAndStatus(tenantId, Comment.CommentStatus.PENDING);
+        for (Comment comment : pendingComments) {
+            comment.setStatus(Comment.CommentStatus.APPROVED);
+            comment.setUpdatedAt(LocalDateTime.now());
+        }
+        commentRepository.saveAll(pendingComments);
+        System.out.println("Approved " + pendingComments.size() + " pending comments");
+        return pendingComments.size();
     }
 
     private String sanitizeComment(String body) {

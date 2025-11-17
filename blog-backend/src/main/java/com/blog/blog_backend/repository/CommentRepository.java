@@ -14,5 +14,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
 
     Page<Comment> findByTenantIdAndStatusOrderByCreatedAtDesc(String tenantId, Comment.CommentStatus status, Pageable pageable);
 
+    List<Comment> findByTenantIdAndStatus(String tenantId, Comment.CommentStatus status);
+
     long countByTenantIdAndStatus(String tenantId, Comment.CommentStatus status);
 }

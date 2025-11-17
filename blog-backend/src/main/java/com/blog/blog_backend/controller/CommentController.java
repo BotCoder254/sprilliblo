@@ -44,13 +44,18 @@ public class CommentController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest httpRequest) {
 
+        System.out.println("Getting pending comments for tenant: " + tenantId + ", page: " + page);
+        
         String userId = (String) httpRequest.getAttribute("userId");
         if (userId == null) {
+            System.out.println("No userId found in request attributes");
             return ResponseEntity.status(401).build();
         }
 
+        System.out.println("User ID: " + userId);
         Pageable pageable = PageRequest.of(page, size);
         Page<Comment> comments = commentService.getPendingComments(tenantId, pageable);
+        System.out.println("Found " + comments.getTotalElements() + " pending comments");
         return ResponseEntity.ok(comments);
     }
 
@@ -97,5 +102,27 @@ public class CommentController {
 
         commentService.deleteComment(tenantId, commentId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/test-pending-comment")
+    public ResponseEntity<String> createTestPendingComment(
+            @PathVariable String tenantId,
+            HttpServletRequest httpRequest) {
+
+        String userId = (String) httpRequest.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        // Create a test pending comment
+        CommentRequest testRequest = new CommentRequest();
+        testRequest.setAuthorName("Test User");
+        testRequest.setAuthorEmail("test@example.com");
+        testRequest.setBody("This is a test pending comment for moderation.");
+        testRequest.setHoneypot("");
+
+        // Force it to be pending by passing null userId
+        CommentResponse comment = commentService.createComment(tenantId, "test-post-id", testRequest, null);
+        return ResponseEntity.ok("Created test pending comment: " + comment.getId());
     }
 }
