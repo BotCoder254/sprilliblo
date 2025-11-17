@@ -32,105 +32,99 @@ public class SearchService {
     private MongoTemplate mongoTemplate;
 
     public SearchResultDto search(String query, String tenantId, int limit) {
-        if (query == null || query.trim().isEmpty()) {
+        if (query == null || query.trim().isEmpty() || tenantId == null) {
             return new SearchResultDto(List.of(), List.of(), List.of(), false);
         }
 
+        // Limit search term length to prevent potential issues
         String searchTerm = query.trim();
-        Pattern pattern = Pattern.compile(searchTerm, Pattern.CASE_INSENSITIVE);
+        if (searchTerm.length() > 100) {
+            searchTerm = searchTerm.substring(0, 100);
+        }
 
-        // Search posts
-        List<SearchResultDto.PostSearchResult> posts = searchPosts(pattern, tenantId, limit);
+        try {
+            Pattern pattern = Pattern.compile(Pattern.quote(searchTerm), Pattern.CASE_INSENSITIVE);
 
-        // Search tags
-        List<SearchResultDto.TagSearchResult> tags = searchTags(pattern, tenantId, limit);
+            // Search posts
+            List<SearchResultDto.PostSearchResult> posts = searchPosts(pattern, tenantId, Math.min(limit, 20));
 
-        // Search authors
-        List<SearchResultDto.AuthorSearchResult> authors = searchAuthors(pattern, tenantId, limit);
+            // Search tags
+            List<SearchResultDto.TagSearchResult> tags = searchTags(pattern, tenantId, Math.min(limit, 20));
 
-        boolean hasMore = posts.size() >= limit || tags.size() >= limit || authors.size() >= limit;
+            // Search authors
+            List<SearchResultDto.AuthorSearchResult> authors = searchAuthors(pattern, tenantId, Math.min(limit, 20));
 
-        return new SearchResultDto(posts, tags, authors, hasMore);
+            boolean hasMore = posts.size() >= limit || tags.size() >= limit || authors.size() >= limit;
+
+            return new SearchResultDto(posts, tags, authors, hasMore);
+        } catch (Exception e) {
+            System.err.println("Search error: " + e.getMessage());
+            return new SearchResultDto(List.of(), List.of(), List.of(), false);
+        }
     }
 
     private List<SearchResultDto.PostSearchResult> searchPosts(Pattern pattern, String tenantId, int limit) {
-        Query query = new Query();
-
-        // Use text search if available, otherwise fall back to regex
         try {
-            query.addCriteria(Criteria.where("tenantId").is(tenantId)
-                    .and("status").is(Post.PostStatus.PUBLISHED)
-                    .andOperator(Criteria.where("$text").is(Criteria.where("$search").is(pattern.pattern()))));
+            // Use simple repository query to avoid MongoDB converter issues
+            List<Post> posts = postRepository.findByTenantIdAndStatusAndTitleContainingIgnoreCaseOrderByPublishedAtDesc(
+                    tenantId, Post.PostStatus.PUBLISHED, pattern.pattern().replace("\\Q", "").replace("\\E", ""), 
+                    PageRequest.of(0, limit)).getContent();
+
+            return posts.stream()
+                    .map(post -> new SearchResultDto.PostSearchResult(
+                            post.getId() != null ? post.getId() : "",
+                            post.getTitle() != null ? post.getTitle() : "",
+                            post.getSlug() != null ? post.getSlug() : "",
+                            post.getExcerpt() != null ? post.getExcerpt() : "",
+                            post.getAuthor() != null ? post.getAuthor() : "",
+                            post.getTags() != null ? post.getTags() : List.of()
+                    ))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
-            // Fallback to regex search
-            query.addCriteria(Criteria.where("tenantId").is(tenantId)
-                    .and("status").is(Post.PostStatus.PUBLISHED)
-                    .orOperator(
-                            Criteria.where("title").regex(pattern),
-                            Criteria.where("excerpt").regex(pattern),
-                            Criteria.where("tags").regex(pattern)
-                    ));
+            System.err.println("Error searching posts: " + e.getMessage());
+            return List.of();
         }
-
-        query.limit(limit);
-
-        List<Post> posts = mongoTemplate.find(query, Post.class);
-
-        return posts.stream()
-                .map(post -> new SearchResultDto.PostSearchResult(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getSlug(),
-                        post.getExcerpt(),
-                        post.getAuthor(),
-                        post.getTags()
-                ))
-                .collect(Collectors.toList());
     }
 
     private List<SearchResultDto.TagSearchResult> searchTags(Pattern pattern, String tenantId, int limit) {
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("tenantId").is(tenantId)
-                        .and("status").is(Post.PostStatus.PUBLISHED)),
-                Aggregation.unwind("tags"),
-                Aggregation.match(Criteria.where("tags").regex(pattern)),
-                Aggregation.group("tags").count().as("postCount"),
-                Aggregation.project("postCount").and("_id").as("name"),
-                Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "postCount"),
-                Aggregation.limit(limit)
-        );
-
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "posts", Map.class);
-
-        return results.getMappedResults().stream()
-                .map(result -> new SearchResultDto.TagSearchResult(
-                        (String) result.get("name"),
-                        ((Number) result.get("postCount")).longValue()
-                ))
-                .collect(Collectors.toList());
+        try {
+            // Use PostService method instead of aggregation
+            String searchTerm = pattern.pattern().replace("\\Q", "").replace("\\E", "");
+            List<Post> posts = postRepository.findByTenantIdAndStatus(tenantId, Post.PostStatus.PUBLISHED);
+            
+            return posts.stream()
+                    .filter(post -> post.getTags() != null)
+                    .flatMap(post -> post.getTags().stream())
+                    .filter(tag -> tag.toLowerCase().contains(searchTerm.toLowerCase()))
+                    .distinct()
+                    .limit(limit)
+                    .map(tag -> new SearchResultDto.TagSearchResult(tag, 1L))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error searching tags: " + e.getMessage());
+            return List.of();
+        }
     }
 
     private List<SearchResultDto.AuthorSearchResult> searchAuthors(Pattern pattern, String tenantId, int limit) {
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("tenantId").is(tenantId)
-                        .and("status").is(Post.PostStatus.PUBLISHED)
-                        .and("author").regex(pattern)),
-                Aggregation.group("authorId", "author").count().as("postCount"),
-                Aggregation.project("postCount").and("_id.author").as("name").and("_id.authorId").as("id"),
-                Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "postCount"),
-                Aggregation.limit(limit)
-        );
-
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "posts", Map.class);
-
-        return results.getMappedResults().stream()
-                .map(result -> {
-                    SearchResultDto.AuthorSearchResult authorResult = new SearchResultDto.AuthorSearchResult();
-                    authorResult.setId((String) result.get("id"));
-                    authorResult.setName((String) result.get("name"));
-                    authorResult.setPostCount(((Number) result.get("postCount")).longValue());
-                    return authorResult;
-                })
-                .collect(Collectors.toList());
+        try {
+            String searchTerm = pattern.pattern().replace("\\Q", "").replace("\\E", "");
+            List<Post> posts = postRepository.findByTenantIdAndStatus(tenantId, Post.PostStatus.PUBLISHED);
+            
+            return posts.stream()
+                    .filter(post -> post.getAuthor() != null && 
+                            post.getAuthor().toLowerCase().contains(searchTerm.toLowerCase()))
+                    .map(post -> new SearchResultDto.AuthorSearchResult(
+                            post.getAuthorId() != null ? post.getAuthorId() : "",
+                            post.getAuthor(),
+                            1L
+                    ))
+                    .distinct()
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error searching authors: " + e.getMessage());
+            return List.of();
+        }
     }
 }

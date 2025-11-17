@@ -125,4 +125,30 @@ public class CommentController {
         CommentResponse comment = commentService.createComment(tenantId, "test-post-id", testRequest, null);
         return ResponseEntity.ok("Created test pending comment: " + comment.getId());
     }
+
+    @PostMapping("/test-notifications")
+    public ResponseEntity<String> createTestNotifications(
+            @PathVariable String tenantId,
+            HttpServletRequest httpRequest) {
+
+        String userId = (String) httpRequest.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            // Create test notifications
+            notificationService.createCommentNotification(
+                    tenantId, userId, "Test Post Title", "Test Commenter", "test-post-slug"
+            );
+            
+            notificationService.createPostPublishedNotification(
+                    tenantId, userId, "Test Published Post", "test-published-slug"
+            );
+            
+            return ResponseEntity.ok("Created test notifications");
+        } catch (Exception e) {
+            return ResponseEntity.ok("Error creating notifications: " + e.getMessage());
+        }
+    }
 }

@@ -18,9 +18,13 @@ public class SearchController {
     public ResponseEntity<SearchResultDto> search(
             @RequestParam String q,
             @RequestParam(defaultValue = "5") int limit,
-            Authentication authentication) {
+            jakarta.servlet.http.HttpServletRequest request) {
 
-        String tenantId = (String) authentication.getPrincipal();
+        String tenantId = (String) request.getAttribute("tenantId");
+        if (tenantId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        
         SearchResultDto results = searchService.search(q, tenantId, limit);
         return ResponseEntity.ok(results);
     }
